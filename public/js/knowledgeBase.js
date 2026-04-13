@@ -33,6 +33,9 @@ async function fetchKBArticles(category, search) {
     if (data.articles.length === 0) {
       grid.innerHTML = '';
       empty.style.display = '';
+      // Show "Add Article" button for admins
+      var adminBtn = empty.querySelector('.admin-only-btn');
+      if (adminBtn) adminBtn.style.display = (currentUser && currentUser.role === 'admin') ? '' : 'none';
       return;
     }
     empty.style.display = 'none';
