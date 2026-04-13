@@ -1,0 +1,5 @@
+node_modules/
+portal.db
+public/uploads/*
+!public/uploads/.gitkeep
+.env
