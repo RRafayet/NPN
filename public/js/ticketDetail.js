@@ -1,4 +1,40 @@
 // ===== Ticket Detail & Chat =====
+var chatPollInterval = null;
+var lastMessageCount = 0;
+
+function startChatPolling(ticketId) {
+  stopChatPolling();
+  chatPollInterval = setInterval(async function() {
+    if (currentPage !== 'ticket-detail' || !currentTicket || currentTicket.id !== ticketId) {
+      stopChatPolling();
+      return;
+    }
+    try {
+      var data = await api('/api/tickets/' + ticketId);
+      // Update chat only if new messages arrived
+      if (data.messages.length !== lastMessageCount) {
+        lastMessageCount = data.messages.length;
+        renderChat(data.messages);
+      }
+      // Update ticket status badge silently
+      if (data.ticket.status !== currentTicket.status) {
+        currentTicket = data.ticket;
+        var statusEl = document.getElementById('detail-status-badge');
+        statusEl.className = 'badge badge-' + data.ticket.status;
+        statusEl.textContent = data.ticket.status.replace('_', ' ');
+        document.getElementById('chat-input-area').style.display = data.ticket.status === 'closed' ? 'none' : '';
+      }
+    } catch (e) { /* silent */ }
+  }, 5000);
+}
+
+function stopChatPolling() {
+  if (chatPollInterval) {
+    clearInterval(chatPollInterval);
+    chatPollInterval = null;
+  }
+}
+
 async function viewTicket(id) {
   try {
     var data = await api('/api/tickets/' + id);
@@ -43,8 +79,10 @@ async function viewTicket(id) {
     // Hide chat input if ticket closed
     document.getElementById('chat-input-area').style.display = ticket.status === 'closed' ? 'none' : '';
 
+    lastMessageCount = messages ? messages.length : 0;
     renderChat(messages);
     navigateTo('ticket-detail');
+    startChatPolling(id);
   } catch (e) {
     alert('Error loading ticket: ' + e.message);
   }

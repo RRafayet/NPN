@@ -1,5 +1,30 @@
 // ===== Navigation =====
+var pagePollingInterval = null;
+
+function stopPagePolling() {
+  if (pagePollingInterval) {
+    clearInterval(pagePollingInterval);
+    pagePollingInterval = null;
+  }
+}
+
+function startPagePolling(page) {
+  stopPagePolling();
+  var polledPages = ['dashboard', 'my-tickets', 'all-tickets'];
+  if (polledPages.indexOf(page) === -1) return;
+  pagePollingInterval = setInterval(function() {
+    if (currentPage !== page) { stopPagePolling(); return; }
+    if (page === 'dashboard') loadDashboard();
+    if (page === 'my-tickets') loadMyTickets();
+    if (page === 'all-tickets') loadAllTickets();
+  }, 15000);
+}
+
 function navigateTo(page) {
+  // Stop any active polling when leaving a page
+  if (page !== 'ticket-detail') stopChatPolling();
+  if (page !== currentPage) stopPagePolling();
+
   currentPage = page;
   // Hide all pages
   document.querySelectorAll('.page').forEach(function(p) { p.style.display = 'none'; });
@@ -29,6 +54,8 @@ function navigateTo(page) {
   if (page === 'new-request') loadNewRequestForm();
   if (page === 'knowledge-base') loadKnowledgeBase();
   if (page === 'manage-kb') loadManageKB();
+  // Start background polling for list pages
+  startPagePolling(page);
   // Close mobile sidebar
   document.getElementById('sidebar').classList.remove('open');
 }
