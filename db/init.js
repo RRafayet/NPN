@@ -75,17 +75,19 @@ function initializeDatabase() {
   `);
 
   // Seed default IT admin users if they don't exist (idempotent per email)
-  const seedAdmins = [
-    { name: 'IT Admin',    email: 'admin@nipponexpress.com',         password: 'admin123' },
-    { name: 'IT Support',  email: 'support@nipponexpress.com',       password: 'admin123' },
-    { name: 'Radif Rafayet', email: 'radif.rafayet@nipponexpress.com', password: 'Nippon@2024' },
-    { name: 'Sudip Regmi', email: 'sudip.regmi@nipponexpress.com',   password: 'Nippon@2024' },
+  const seedUsers = [
+    { name: 'IT Admin',      email: 'admin@nipponexpress.com',           password: 'admin123',    role: 'admin' },
+    { name: 'IT Support',    email: 'support@nipponexpress.com',         password: 'admin123',    role: 'admin' },
+    { name: 'Radif Rafayet', email: 'radif.rafayet@nipponexpress.com',   password: 'Nippon@2024', role: 'admin' },
+    { name: 'Sudip Regmi',   email: 'sudip.regmi@nipponexpress.com',     password: 'Nippon@2024', role: 'admin' },
+    { name: 'Staff',         email: 'staff@nipponexpress.com',           password: 'Nippon@2024', role: 'user' },
+    { name: 'Warehouse',     email: 'warehouse@nipponexpress.com',       password: 'Nippon@2024', role: 'user' },
   ];
   const insertUser = db.prepare('INSERT OR IGNORE INTO users (name, email, password, role) VALUES (?, ?, ?, ?)');
-  for (const u of seedAdmins) {
+  for (const u of seedUsers) {
     const exists = db.prepare('SELECT id FROM users WHERE email = ?').get(u.email);
     if (!exists) {
-      insertUser.run(u.name, u.email, bcrypt.hashSync(u.password, 10), 'admin');
+      insertUser.run(u.name, u.email, bcrypt.hashSync(u.password, 10), u.role);
     }
   }
 
