@@ -74,17 +74,19 @@ function initializeDatabase() {
     );
   `);
 
-  // Seed default IT admin users if they don't exist
-  const existingAdmin = db.prepare('SELECT id FROM users WHERE role = ?').get('admin');
-  if (!existingAdmin) {
-    const hashedPassword = bcrypt.hashSync('admin123', 10);
-    db.prepare(`
-      INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)
-    `).run('IT Admin', 'admin@nipponexpress.com', hashedPassword, 'admin');
-
-    db.prepare(`
-      INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)
-    `).run('IT Support', 'support@nipponexpress.com', hashedPassword, 'admin');
+  // Seed default IT admin users if they don't exist (idempotent per email)
+  const seedAdmins = [
+    { name: 'IT Admin',    email: 'admin@nipponexpress.com',         password: 'admin123' },
+    { name: 'IT Support',  email: 'support@nipponexpress.com',       password: 'admin123' },
+    { name: 'Radif Rafayet', email: 'radif.rafayet@nipponexpress.com', password: 'Nippon@2024' },
+    { name: 'Sudip Regmi', email: 'sudip.regmi@nipponexpress.com',   password: 'Nippon@2024' },
+  ];
+  const insertUser = db.prepare('INSERT OR IGNORE INTO users (name, email, password, role) VALUES (?, ?, ?, ?)');
+  for (const u of seedAdmins) {
+    const exists = db.prepare('SELECT id FROM users WHERE email = ?').get(u.email);
+    if (!exists) {
+      insertUser.run(u.name, u.email, bcrypt.hashSync(u.password, 10), 'admin');
+    }
   }
 
   return db;

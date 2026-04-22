@@ -585,6 +585,37 @@ tr:hover { background: var(--npe-gray-100); }
 .badge-open { background: rgba(253,126,20,0.12); color: #c65d00; }
 .badge-in_progress, .badge-in-progress { background: rgba(0,123,255,0.12); color: #0056b3; }
 .badge-closed { background: rgba(40,167,69,0.12); color: #186429; }
+.badge-priority { background: rgba(204,0,0,0.12); color: var(--npe-red); font-weight: 700; }
+
+/* Priority row highlight */
+tr.row-priority td { background: rgba(204,0,0,0.04); }
+tr.row-priority:hover td { background: rgba(204,0,0,0.08); }
+
+/* Priority filter tab */
+.filter-tab-priority { border-color: var(--npe-red); color: var(--npe-red); }
+.filter-tab-priority:hover, .filter-tab-priority.active { background: var(--npe-red); color: var(--npe-white); border-color: var(--npe-red); }
+
+/* Priority toggle button */
+.btn-priority-off {
+  background: var(--npe-white);
+  border: 1.5px solid var(--npe-gray-300);
+  color: var(--npe-gray-700);
+}
+.btn-priority-off:hover { border-color: var(--npe-red); color: var(--npe-red); }
+
+.btn-priority-on {
+  background: rgba(204,0,0,0.08);
+  border: 1.5px solid var(--npe-red);
+  color: var(--npe-red);
+  font-weight: 700;
+}
+
+.priority-hint {
+  font-size: 12px;
+  color: var(--npe-gray-500);
+  margin-top: 6px;
+}
+.priority-hint-on { color: var(--npe-red); }
 
 /* ===== Ticket Detail ===== */
 .ticket-detail-grid {

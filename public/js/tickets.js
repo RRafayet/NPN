@@ -6,6 +6,13 @@ async function loadStaff() {
   } catch (e) { console.error(e); }
 }
 
+function priorityBadge(priority) {
+  if (priority === 'high') {
+    return '<span class="badge badge-priority">&#9888; Priority</span>';
+  }
+  return '';
+}
+
 function renderTicketRows(tickets, tbody, isAdmin) {
   if (tickets.length === 0) {
     return false;
@@ -16,8 +23,10 @@ function renderTicketRows(tickets, tbody, isAdmin) {
       var s = staffList.find(function(st) { return st.id === t.assigned_to; });
       if (s) assignedName = s.name;
     }
-    var row = '<tr>' +
-      '<td><span class="ticket-number" onclick="viewTicket(' + t.id + ')">' + escapeHtml(t.ticket_number) + '</span></td>';
+    var priorityMark = t.priority === 'high' ? ' class="row-priority"' : '';
+    var row = '<tr' + priorityMark + '>' +
+      '<td><span class="ticket-number" onclick="viewTicket(' + t.id + ')">' + escapeHtml(t.ticket_number) + '</span>' +
+      (isAdmin && t.priority === 'high' ? ' ' + priorityBadge(t.priority) : '') + '</td>';
     if (isAdmin) row += '<td>' + escapeHtml(t.requester_name) + '</td>';
     row += '<td>' + escapeHtml(t.device_name) + '</td>' +
       '<td>' + escapeHtml(truncate(t.description, 40)) + '</td>';
@@ -52,7 +61,9 @@ function applyFilter(pageId, tickets) {
   filterBtns.forEach(function(btn) {
     if (btn.classList.contains('active')) activeFilter = btn.dataset.filter;
   });
-  var filtered = activeFilter === 'all' ? tickets : tickets.filter(function(t) { return t.status === activeFilter; });
+  var filtered = activeFilter === 'all' ? tickets :
+    activeFilter === 'priority' ? tickets.filter(function(t) { return t.priority === 'high'; }) :
+    tickets.filter(function(t) { return t.status === activeFilter; });
   var tbodyId = pageId === 'my-tickets' ? 'my-tickets-body' : 'all-tickets-body';
   var emptyId = pageId === 'my-tickets' ? 'my-tickets-empty' : 'all-tickets-empty';
   var isAdmin = pageId === 'all-tickets';
@@ -85,12 +96,43 @@ function loadNewRequestForm() {
   });
 }
 
+function togglePriority() {
+  var input = document.getElementById('req-priority');
+  var btn = document.getElementById('priority-toggle');
+  var icon = document.getElementById('priority-icon');
+  var hintOff = document.getElementById('priority-hint-off');
+  var hintOn = document.getElementById('priority-hint-on');
+  if (input.value === 'normal') {
+    input.value = 'high';
+    btn.className = 'btn btn-priority-on';
+    icon.textContent = '⚠';
+    btn.childNodes[1].textContent = ' Priority On';
+    hintOff.style.display = 'none';
+    hintOn.style.display = '';
+  } else {
+    input.value = 'normal';
+    btn.className = 'btn btn-priority-off';
+    icon.innerHTML = '&#9679;';
+    btn.childNodes[1].textContent = ' Mark as Priority';
+    hintOff.style.display = '';
+    hintOn.style.display = 'none';
+  }
+}
+
 function resetNewRequestForm() {
   document.getElementById('new-request-form').reset();
   document.getElementById('new-request-form').style.display = '';
   document.getElementById('request-success').style.display = 'none';
   document.getElementById('file-name').textContent = '';
   document.getElementById('file-upload-area').classList.remove('has-file');
+  // Reset priority
+  document.getElementById('req-priority').value = 'normal';
+  var btn = document.getElementById('priority-toggle');
+  btn.className = 'btn btn-priority-off';
+  document.getElementById('priority-icon').innerHTML = '&#9679;';
+  btn.childNodes[1].textContent = ' Mark as Priority';
+  document.getElementById('priority-hint-off').style.display = '';
+  document.getElementById('priority-hint-on').style.display = 'none';
 }
 
 function initNewRequest() {
@@ -127,6 +169,7 @@ function initNewRequest() {
       formData.append('description', document.getElementById('req-description').value);
       formData.append('assigned_to', document.getElementById('req-assign').value);
       formData.append('cc', document.getElementById('req-cc').value);
+      formData.append('priority', document.getElementById('req-priority').value);
       if (fileInput.files.length) formData.append('image', fileInput.files[0]);
       var data = await api('/api/tickets', { method: 'POST', body: formData });
       document.getElementById('new-ticket-number').textContent = '#' + data.ticket.ticket_number;

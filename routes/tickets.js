@@ -43,7 +43,7 @@ module.exports = function(db) {
 
   // Create ticket
   router.post('/', requireAuthAPI, upload.single('image'), (req, res) => {
-    const { device_name, description, assigned_to, cc } = req.body;
+    const { device_name, description, assigned_to, cc, priority } = req.body;
     const user = req.session.user;
 
     if (!device_name || !description) {
@@ -61,11 +61,12 @@ module.exports = function(db) {
 
     const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
     const assignedTo = assigned_to ? parseInt(assigned_to) : null;
+    const ticketPriority = priority === 'high' ? 'high' : 'normal';
 
     const result = db.prepare(`
-      INSERT INTO tickets (ticket_number, requester_id, requester_name, device_name, description, image_path, assigned_to, cc, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'open')
-    `).run(ticketNumber, user.id, user.name, device_name, description, imagePath, assignedTo, cc || null);
+      INSERT INTO tickets (ticket_number, requester_id, requester_name, device_name, description, image_path, assigned_to, cc, status, priority)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'open', ?)
+    `).run(ticketNumber, user.id, user.name, device_name, description, imagePath, assignedTo, cc || null, ticketPriority);
 
     const ticket = db.prepare('SELECT * FROM tickets WHERE id = ?').get(result.lastInsertRowid);
 
@@ -87,7 +88,8 @@ module.exports = function(db) {
     const adminUsers = db.prepare('SELECT id FROM users WHERE role = ?').all('admin');
     const insertNotif = db.prepare('INSERT INTO notifications (user_id, ticket_id, type, message) VALUES (?, ?, ?, ?)');
     for (const admin of adminUsers) {
-      insertNotif.run(admin.id, ticket.id, 'new_ticket', `New ticket #${ticketNumber} from ${user.name}`);
+      const priorityTag = ticket.priority === 'high' ? ' [PRIORITY]' : '';
+      insertNotif.run(admin.id, ticket.id, 'new_ticket', `New ticket${priorityTag} #${ticketNumber} from ${user.name}`);
     }
 
     res.json({ success: true, ticket });

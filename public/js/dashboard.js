@@ -21,8 +21,10 @@ async function loadDashboard() {
       return;
     }
     tbody.innerHTML = recent.map(function(t) {
-      return '<tr>' +
-        '<td><span class="ticket-number" onclick="viewTicket(' + t.id + ')">' + escapeHtml(t.ticket_number) + '</span></td>' +
+      var priorityMark = t.priority === 'high' ? ' class="row-priority"' : '';
+      var priorityTag = (currentUser.role === 'admin' && t.priority === 'high') ? ' <span class="badge badge-priority">&#9888; Priority</span>' : '';
+      return '<tr' + priorityMark + '>' +
+        '<td><span class="ticket-number" onclick="viewTicket(' + t.id + ')">' + escapeHtml(t.ticket_number) + '</span>' + priorityTag + '</td>' +
         '<td>' + escapeHtml(t.requester_name) + '</td>' +
         '<td>' + escapeHtml(t.device_name) + '</td>' +
         '<td>' + escapeHtml(truncate(t.description, 40)) + '</td>' +

@@ -222,6 +222,15 @@
                 <label for="req-cc">CC (email addresses, comma separated)</label>
                 <input type="text" id="req-cc" class="form-control" placeholder="e.g., manager@nipponexpress.com">
               </div>
+              <div class="form-group">
+                <label>Priority</label>
+                <button type="button" id="priority-toggle" class="btn btn-priority-off" onclick="togglePriority()">
+                  <span id="priority-icon">&#9679;</span> Mark as Priority
+                </button>
+                <input type="hidden" id="req-priority" value="normal">
+                <p class="priority-hint" id="priority-hint-off">Click to flag this request as high priority.</p>
+                <p class="priority-hint priority-hint-on" id="priority-hint-on" style="display:none;">This request is marked as <strong>high priority</strong>. IT team will be notified.</p>
+              </div>
               <button type="submit" class="btn btn-primary btn-full" id="submit-request-btn">Submit Request</button>
             </form>
           </div>
@@ -269,6 +278,7 @@
           <button class="filter-tab" data-filter="open">Open</button>
           <button class="filter-tab" data-filter="in_progress">In Progress</button>
           <button class="filter-tab" data-filter="closed">Closed</button>
+          <button class="filter-tab filter-tab-priority" data-filter="priority">&#9888; Priority</button>
         </div>
         <div class="card">
           <div class="card-body">
