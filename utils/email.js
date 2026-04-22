@@ -63,6 +63,69 @@ function newTicketEmailToIT(ticket, itEmail) {
   return sendEmail(itEmail, subject, html);
 }
 
+function ticketConfirmationEmailToUser(ticket, userEmail) {
+  const subject = `[Ticket Received] Your IT Request #${ticket.ticket_number}`;
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="background-color: #CC0000; color: white; padding: 20px; text-align: center;">
+        <h2 style="margin: 0;">Nippon Express IT Portal</h2>
+        <p style="margin: 5px 0 0;">Your IT Request Has Been Received</p>
+      </div>
+      <div style="padding: 20px; border: 1px solid #ddd;">
+        <p>Hi ${ticket.requester_name},</p>
+        <p>Your IT request has been successfully submitted. Our IT team has been notified and will be in touch shortly.</p>
+        <div style="background-color: #f9f9f9; border: 2px solid #CC0000; border-radius: 8px; padding: 16px; text-align: center; margin: 20px 0;">
+          <p style="margin: 0; font-size: 13px; color: #666;">Your Ticket Number</p>
+          <p style="margin: 8px 0 0; font-size: 28px; font-weight: bold; color: #CC0000;">#${ticket.ticket_number}</p>
+        </div>
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #eee;">Device:</td><td style="padding: 8px; border-bottom: 1px solid #eee;">${ticket.device_name}</td></tr>
+          <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #eee;">Description:</td><td style="padding: 8px; border-bottom: 1px solid #eee;">${ticket.description}</td></tr>
+          <tr><td style="padding: 8px; font-weight: bold;">Status:</td><td style="padding: 8px;"><span style="background-color: #FFA500; color: white; padding: 3px 10px; border-radius: 12px;">Open</span></td></tr>
+        </table>
+        <div style="margin-top: 20px; text-align: center;">
+          <a href="${PORTAL_URL}" style="background-color: #CC0000; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">Track Your Request</a>
+        </div>
+        <p style="margin-top: 15px; color: #666; font-size: 13px;">Please keep this ticket number for your records. You can log in to the portal at any time to check the status or send a message to the IT team.</p>
+      </div>
+      <div style="background-color: #f5f5f5; padding: 10px; text-align: center; font-size: 12px; color: #666;">
+        Nippon Express IT Support Portal
+      </div>
+    </div>
+  `;
+  return sendEmail(userEmail, subject, html);
+}
+
+function ticketInProgressEmailToUser(ticket, userEmail) {
+  const subject = `[In Progress] Ticket #${ticket.ticket_number} is being worked on`;
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="background-color: #CC0000; color: white; padding: 20px; text-align: center;">
+        <h2 style="margin: 0;">Nippon Express IT Portal</h2>
+        <p style="margin: 5px 0 0;">Your Ticket Is Now In Progress</p>
+      </div>
+      <div style="padding: 20px; border: 1px solid #ddd;">
+        <p>Hi ${ticket.requester_name},</p>
+        <p>Good news! The IT team has picked up your request and is actively working on it.</p>
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #eee;">Ticket #:</td><td style="padding: 8px; border-bottom: 1px solid #eee; color: #CC0000; font-weight: bold;">${ticket.ticket_number}</td></tr>
+          <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #eee;">Device:</td><td style="padding: 8px; border-bottom: 1px solid #eee;">${ticket.device_name}</td></tr>
+          <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #eee;">Description:</td><td style="padding: 8px; border-bottom: 1px solid #eee;">${ticket.description}</td></tr>
+          <tr><td style="padding: 8px; font-weight: bold;">Status:</td><td style="padding: 8px;"><span style="background-color: #007bff; color: white; padding: 3px 10px; border-radius: 12px;">In Progress</span></td></tr>
+        </table>
+        <div style="margin-top: 20px; text-align: center;">
+          <a href="${PORTAL_URL}" style="background-color: #CC0000; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">View &amp; Reply in Portal</a>
+        </div>
+        <p style="margin-top: 15px; color: #666; font-size: 13px;">You can log in to the portal to send messages to the IT team or check for any updates.</p>
+      </div>
+      <div style="background-color: #f5f5f5; padding: 10px; text-align: center; font-size: 12px; color: #666;">
+        Nippon Express IT Support Portal
+      </div>
+    </div>
+  `;
+  return sendEmail(userEmail, subject, html);
+}
+
 function ticketClosedEmailToUser(ticket, userEmail) {
   const subject = `[Resolved] Ticket #${ticket.ticket_number} has been closed`;
   const html = `
@@ -121,6 +184,8 @@ function chatNotificationEmail(ticket, senderName, messageText, userEmail) {
 module.exports = {
   sendEmail,
   newTicketEmailToIT,
+  ticketConfirmationEmailToUser,
+  ticketInProgressEmailToUser,
   ticketClosedEmailToUser,
   chatNotificationEmail
 };

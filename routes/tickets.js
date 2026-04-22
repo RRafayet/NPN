@@ -3,7 +3,7 @@ const multer = require('multer');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const { requireAuthAPI, requireAdmin } = require('../middleware/auth');
-const { newTicketEmailToIT, ticketClosedEmailToUser, chatNotificationEmail } = require('../utils/email');
+const { newTicketEmailToIT, ticketConfirmationEmailToUser, ticketInProgressEmailToUser, ticketClosedEmailToUser, chatNotificationEmail } = require('../utils/email');
 
 const router = express.Router();
 
@@ -69,6 +69,12 @@ module.exports = function(db) {
     `).run(ticketNumber, user.id, user.name, device_name, description, imagePath, assignedTo, cc || null, ticketPriority);
 
     const ticket = db.prepare('SELECT * FROM tickets WHERE id = ?').get(result.lastInsertRowid);
+
+    // Confirm ticket to the requester
+    const requesterUser = db.prepare('SELECT email FROM users WHERE id = ?').get(user.id);
+    if (requesterUser) {
+      ticketConfirmationEmailToUser(ticket, requesterUser.email);
+    }
 
     // Notify IT admins via email
     const admins = db.prepare('SELECT email FROM users WHERE role = ?').all('admin');
@@ -142,8 +148,18 @@ module.exports = function(db) {
     db.prepare('UPDATE tickets SET status = ?, updated_at = CURRENT_TIMESTAMP, closed_at = ? WHERE id = ?')
       .run(status, closedAt, ticket.id);
 
+    const updatedTicketForEmail = db.prepare('SELECT * FROM tickets WHERE id = ?').get(ticket.id);
+    const requester = db.prepare('SELECT email FROM users WHERE id = ?').get(ticket.requester_id);
+
+    if (status === 'in_progress') {
+      if (requester) {
+        ticketInProgressEmailToUser(updatedTicketForEmail, requester.email);
+      }
+      db.prepare('INSERT INTO notifications (user_id, ticket_id, type, message) VALUES (?, ?, ?, ?)')
+        .run(ticket.requester_id, ticket.id, 'status_update', `Your ticket #${ticket.ticket_number} is now in progress`);
+    }
+
     if (status === 'closed') {
-      const requester = db.prepare('SELECT email FROM users WHERE id = ?').get(ticket.requester_id);
       if (requester) {
         ticketClosedEmailToUser(ticket, requester.email);
       }
