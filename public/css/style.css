@@ -42,10 +42,64 @@ a:hover { color: var(--npe-red-dark); }
 .auth-container {
   min-height: 100vh;
   display: flex;
+  align-items: stretch;
+  background: var(--npe-dark);
+}
+
+/* Split layout: image left, form right */
+.auth-split {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.auth-hero {
+  flex: 1 1 55%;
+  position: relative;
+  overflow: hidden;
+  min-height: 280px;
+}
+
+.auth-hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.auth-hero-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 32px 40px;
+  background: linear-gradient(to top, rgba(0,0,0,0.72) 0%, transparent 100%);
+}
+
+.auth-hero-brand {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 6px;
+}
+
+.auth-hero-tagline {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--npe-white);
+  line-height: 1.3;
+}
+
+.auth-form-panel {
+  flex: 0 0 420px;
+  display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--npe-dark) 0%, var(--npe-dark-2) 100%);
-  padding: 20px;
+  background: var(--npe-gray-100);
+  padding: 32px 24px;
 }
 
 .auth-card {
@@ -53,7 +107,7 @@ a:hover { color: var(--npe-red-dark); }
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   width: 100%;
-  max-width: 440px;
+  max-width: 400px;
   overflow: hidden;
 }
 
@@ -976,6 +1030,10 @@ tr:hover { background: var(--npe-gray-100); }
   .ticket-detail-grid {
     grid-template-columns: 1fr;
   }
+
+  /* Narrow the image panel slightly */
+  .auth-hero { flex: 1 1 48%; }
+  .auth-form-panel { flex: 0 0 380px; }
 }
 
 @media (max-width: 768px) {
@@ -995,8 +1053,34 @@ tr:hover { background: var(--npe-gray-100); }
 
   .ticket-meta { grid-template-columns: 1fr; }
   .kb-grid { grid-template-columns: 1fr; }
+
+  /* Stack auth layout: image on top, form below */
+  .auth-split {
+    flex-direction: column;
+  }
+
+  .auth-hero {
+    flex: 0 0 220px;
+    min-height: 220px;
+  }
+
+  .auth-form-panel {
+    flex: 1;
+    padding: 28px 16px;
+  }
+
+  .auth-hero-overlay {
+    padding: 20px 24px;
+  }
+
+  .auth-hero-tagline {
+    font-size: 17px;
+  }
 }
 
 @media (max-width: 480px) {
   .stats-grid { grid-template-columns: 1fr; }
+
+  .auth-hero { flex: 0 0 180px; min-height: 180px; }
+  .auth-hero-tagline { font-size: 15px; }
 }
