@@ -1,4 +1,17 @@
 // ===== Ticket Detail & Chat =====
+function formatPriorityReason(reason) {
+  var labels = {
+    'operations_down': 'Operations Down',
+    'warehouse_equipment': 'Warehouse Equipment',
+    'fleet_delivery': 'Fleet & Delivery',
+    'customer_impacting': 'Customer Impacting',
+    'safety_compliance': 'Safety or Compliance',
+    'personal_productivity': 'Personal Productivity'
+  };
+  if (!reason) return '';
+  return labels[reason] || reason;
+}
+
 var chatPollInterval = null;
 var lastMessageCount = 0;
 
@@ -47,6 +60,15 @@ async function viewTicket(id) {
     document.getElementById('detail-device').textContent = ticket.device_name;
     document.getElementById('detail-description').textContent = ticket.description;
     document.getElementById('detail-date').textContent = formatDate(ticket.created_at) + ' ' + formatTime(ticket.created_at);
+
+    var priorityEl = document.getElementById('detail-priority');
+    if (ticket.priority === 'high') {
+      var reasonLabel = formatPriorityReason(ticket.priority_reason);
+      priorityEl.innerHTML = '<span class="badge badge-priority">&#9888; Priority</span>' +
+        (reasonLabel ? ' <span class="priority-reason-tag">' + escapeHtml(reasonLabel) + '</span>' : '');
+    } else {
+      priorityEl.innerHTML = '<span style="color:var(--npe-gray-500);">Normal</span>';
+    }
 
     var statusEl = document.getElementById('detail-status-badge');
     statusEl.className = 'badge badge-' + ticket.status;

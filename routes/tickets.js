@@ -43,7 +43,7 @@ module.exports = function(db) {
 
   // Create ticket
   router.post('/', requireAuthAPI, upload.single('image'), (req, res) => {
-    const { device_name, description, assigned_to, cc, priority } = req.body;
+    const { device_name, description, assigned_to, cc, priority, priority_reason } = req.body;
     const user = req.session.user;
 
     if (!device_name || !description) {
@@ -62,11 +62,12 @@ module.exports = function(db) {
     const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
     const assignedTo = assigned_to ? parseInt(assigned_to) : null;
     const ticketPriority = priority === 'high' ? 'high' : 'normal';
+    const ticketPriorityReason = ticketPriority === 'high' && priority_reason ? priority_reason.trim().substring(0, 300) : null;
 
     const result = db.prepare(`
-      INSERT INTO tickets (ticket_number, requester_id, requester_name, device_name, description, image_path, assigned_to, cc, status, priority)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'open', ?)
-    `).run(ticketNumber, user.id, user.name, device_name, description, imagePath, assignedTo, cc || null, ticketPriority);
+      INSERT INTO tickets (ticket_number, requester_id, requester_name, device_name, description, image_path, assigned_to, cc, status, priority, priority_reason)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, ?)
+    `).run(ticketNumber, user.id, user.name, device_name, description, imagePath, assignedTo, cc || null, ticketPriority, ticketPriorityReason);
 
     const ticket = db.prepare('SELECT * FROM tickets WHERE id = ?').get(result.lastInsertRowid);
 
@@ -93,8 +94,22 @@ module.exports = function(db) {
     // Create notification for IT admins
     const adminUsers = db.prepare('SELECT id FROM users WHERE role = ?').all('admin');
     const insertNotif = db.prepare('INSERT INTO notifications (user_id, ticket_id, type, message) VALUES (?, ?, ?, ?)');
+    const priorityReasonLabels = {
+      'operations_down': 'Operations Down',
+      'warehouse_equipment': 'Warehouse Equipment',
+      'fleet_delivery': 'Fleet & Delivery',
+      'customer_impacting': 'Customer Impacting',
+      'safety_compliance': 'Safety or Compliance',
+      'personal_productivity': 'Personal Productivity'
+    };
     for (const admin of adminUsers) {
-      const priorityTag = ticket.priority === 'high' ? ' [PRIORITY]' : '';
+      let priorityTag = '';
+      if (ticket.priority === 'high') {
+        const reasonLabel = ticket.priority_reason
+          ? (priorityReasonLabels[ticket.priority_reason] || ticket.priority_reason)
+          : '';
+        priorityTag = ' [PRIORITY' + (reasonLabel ? ': ' + reasonLabel : '') + ']';
+      }
       insertNotif.run(admin.id, ticket.id, 'new_ticket', `New ticket${priorityTag} #${ticketNumber} from ${user.name}`);
     }
 
@@ -107,7 +122,10 @@ module.exports = function(db) {
     let tickets;
 
     if (user.role === 'admin') {
-      tickets = db.prepare('SELECT * FROM tickets ORDER BY created_at DESC').all();
+      tickets = db.prepare(`
+        SELECT * FROM tickets
+        ORDER BY CASE WHEN priority = 'high' THEN 0 ELSE 1 END ASC, created_at ASC
+      `).all();
     } else {
       tickets = db.prepare('SELECT * FROM tickets WHERE requester_id = ? ORDER BY created_at DESC').all(user.id);
     }

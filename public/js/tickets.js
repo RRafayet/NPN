@@ -6,9 +6,11 @@ async function loadStaff() {
   } catch (e) { console.error(e); }
 }
 
-function priorityBadge(priority) {
+function priorityBadge(priority, reason) {
   if (priority === 'high') {
-    return '<span class="badge badge-priority">&#9888; Priority</span>';
+    var label = typeof formatPriorityReason === 'function' ? formatPriorityReason(reason) : '';
+    var titleAttr = label ? ' title="' + escapeHtml(label) + '"' : '';
+    return '<span class="badge badge-priority"' + titleAttr + '>&#9888; Priority</span>';
   }
   return '';
 }
@@ -26,7 +28,7 @@ function renderTicketRows(tickets, tbody, isAdmin) {
     var priorityMark = t.priority === 'high' ? ' class="row-priority"' : '';
     var row = '<tr' + priorityMark + '>' +
       '<td><span class="ticket-number" onclick="viewTicket(' + t.id + ')">' + escapeHtml(t.ticket_number) + '</span>' +
-      (isAdmin && t.priority === 'high' ? ' ' + priorityBadge(t.priority) : '') + '</td>';
+      (isAdmin && t.priority === 'high' ? ' ' + priorityBadge(t.priority, t.priority_reason) : '') + '</td>';
     if (isAdmin) row += '<td>' + escapeHtml(t.requester_name) + '</td>';
     row += '<td>' + escapeHtml(t.device_name) + '</td>' +
       '<td>' + escapeHtml(truncate(t.description, 40)) + '</td>';
@@ -101,21 +103,39 @@ function togglePriority() {
   var btn = document.getElementById('priority-toggle');
   var icon = document.getElementById('priority-icon');
   var hintOff = document.getElementById('priority-hint-off');
-  var hintOn = document.getElementById('priority-hint-on');
+  var panel = document.getElementById('priority-reason-panel');
   if (input.value === 'normal') {
     input.value = 'high';
     btn.className = 'btn btn-priority-on';
     icon.textContent = '⚠';
     btn.childNodes[1].textContent = ' Priority On';
     hintOff.style.display = 'none';
-    hintOn.style.display = '';
+    panel.style.display = '';
   } else {
     input.value = 'normal';
     btn.className = 'btn btn-priority-off';
     icon.innerHTML = '&#9679;';
     btn.childNodes[1].textContent = ' Mark as Priority';
     hintOff.style.display = '';
-    hintOn.style.display = 'none';
+    panel.style.display = 'none';
+    document.querySelectorAll('input[name="priority-reason"]').forEach(function(r) { r.checked = false; });
+    document.querySelectorAll('.priority-reason-card').forEach(function(c) { c.classList.remove('selected'); });
+    document.getElementById('priority-other-container').style.display = 'none';
+    document.getElementById('priority-other-text').value = '';
+    document.getElementById('req-priority-reason').value = '';
+  }
+}
+
+function onPriorityReasonChange(radio) {
+  document.querySelectorAll('.priority-reason-card').forEach(function(c) { c.classList.remove('selected'); });
+  radio.closest('.priority-reason-card').classList.add('selected');
+  var isOther = radio.value === 'other';
+  document.getElementById('priority-other-container').style.display = isOther ? '' : 'none';
+  if (!isOther) {
+    document.getElementById('req-priority-reason').value = radio.value;
+    document.getElementById('priority-other-text').value = '';
+  } else {
+    document.getElementById('req-priority-reason').value = '';
   }
 }
 
@@ -132,7 +152,12 @@ function resetNewRequestForm() {
   document.getElementById('priority-icon').innerHTML = '&#9679;';
   btn.childNodes[1].textContent = ' Mark as Priority';
   document.getElementById('priority-hint-off').style.display = '';
-  document.getElementById('priority-hint-on').style.display = 'none';
+  document.getElementById('priority-reason-panel').style.display = 'none';
+  document.querySelectorAll('input[name="priority-reason"]').forEach(function(r) { r.checked = false; });
+  document.querySelectorAll('.priority-reason-card').forEach(function(c) { c.classList.remove('selected'); });
+  document.getElementById('priority-other-container').style.display = 'none';
+  document.getElementById('priority-other-text').value = '';
+  document.getElementById('req-priority-reason').value = '';
 }
 
 function initNewRequest() {
@@ -163,13 +188,39 @@ function initNewRequest() {
     var btn = document.getElementById('submit-request-btn');
     btn.disabled = true;
     btn.textContent = 'Submitting...';
+
+    var priority = document.getElementById('req-priority').value;
+    var priorityReason = '';
+    if (priority === 'high') {
+      var selectedReason = document.querySelector('input[name="priority-reason"]:checked');
+      if (!selectedReason) {
+        alert('Please select a reason for marking this as priority.');
+        btn.disabled = false;
+        btn.textContent = 'Submit Request';
+        return;
+      }
+      if (selectedReason.value === 'other') {
+        var otherText = document.getElementById('priority-other-text').value.trim();
+        if (!otherText) {
+          alert('Please describe why this request is urgent.');
+          btn.disabled = false;
+          btn.textContent = 'Submit Request';
+          return;
+        }
+        priorityReason = 'Other: ' + otherText;
+      } else {
+        priorityReason = selectedReason.value;
+      }
+    }
+
     try {
       var formData = new FormData();
       formData.append('device_name', document.getElementById('req-device').value);
       formData.append('description', document.getElementById('req-description').value);
       formData.append('assigned_to', document.getElementById('req-assign').value);
       formData.append('cc', document.getElementById('req-cc').value);
-      formData.append('priority', document.getElementById('req-priority').value);
+      formData.append('priority', priority);
+      formData.append('priority_reason', priorityReason);
       if (fileInput.files.length) formData.append('image', fileInput.files[0]);
       var data = await api('/api/tickets', { method: 'POST', body: formData });
       document.getElementById('new-ticket-number').textContent = '#' + data.ticket.ticket_number;

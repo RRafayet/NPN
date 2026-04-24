@@ -22,7 +22,7 @@ async function loadDashboard() {
     }
     tbody.innerHTML = recent.map(function(t) {
       var priorityMark = t.priority === 'high' ? ' class="row-priority"' : '';
-      var priorityTag = (currentUser.role === 'admin' && t.priority === 'high') ? ' <span class="badge badge-priority">&#9888; Priority</span>' : '';
+      var priorityTag = (currentUser.role === 'admin' && t.priority === 'high') ? ' ' + priorityBadge(t.priority, t.priority_reason) : '';
       return '<tr' + priorityMark + '>' +
         '<td><span class="ticket-number" onclick="viewTicket(' + t.id + ')">' + escapeHtml(t.ticket_number) + '</span>' + priorityTag + '</td>' +
         '<td>' + escapeHtml(t.requester_name) + '</td>' +

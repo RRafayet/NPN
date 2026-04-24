@@ -228,8 +228,65 @@
                   <span id="priority-icon">&#9679;</span> Mark as Priority
                 </button>
                 <input type="hidden" id="req-priority" value="normal">
+                <input type="hidden" id="req-priority-reason" value="">
                 <p class="priority-hint" id="priority-hint-off">Click to flag this request as high priority.</p>
-                <p class="priority-hint priority-hint-on" id="priority-hint-on" style="display:none;">This request is marked as <strong>high priority</strong>. IT team will be notified.</p>
+                <div class="priority-reason-panel" id="priority-reason-panel" style="display:none;">
+                  <p class="priority-reason-label">Select the reason for escalation:</p>
+                  <div class="priority-reason-options">
+                    <label class="priority-reason-card">
+                      <input type="radio" name="priority-reason" value="operations_down" onchange="onPriorityReasonChange(this)">
+                      <div class="priority-reason-card-content">
+                        <div class="priority-reason-title">Operations Down</div>
+                        <div class="priority-reason-desc">Core logistics or transport systems unavailable</div>
+                      </div>
+                    </label>
+                    <label class="priority-reason-card">
+                      <input type="radio" name="priority-reason" value="warehouse_equipment" onchange="onPriorityReasonChange(this)">
+                      <div class="priority-reason-card-content">
+                        <div class="priority-reason-title">Warehouse Equipment</div>
+                        <div class="priority-reason-desc">Scanner, printer, or warehouse hardware not working</div>
+                      </div>
+                    </label>
+                    <label class="priority-reason-card">
+                      <input type="radio" name="priority-reason" value="fleet_delivery" onchange="onPriorityReasonChange(this)">
+                      <div class="priority-reason-card-content">
+                        <div class="priority-reason-title">Fleet &amp; Delivery</div>
+                        <div class="priority-reason-desc">Truck dispatch, driver tracking, or delivery system affected</div>
+                      </div>
+                    </label>
+                    <label class="priority-reason-card">
+                      <input type="radio" name="priority-reason" value="customer_impacting" onchange="onPriorityReasonChange(this)">
+                      <div class="priority-reason-card-content">
+                        <div class="priority-reason-title">Customer Impacting</div>
+                        <div class="priority-reason-desc">Client portal, EDI feeds, or customer-facing service affected</div>
+                      </div>
+                    </label>
+                    <label class="priority-reason-card">
+                      <input type="radio" name="priority-reason" value="safety_compliance" onchange="onPriorityReasonChange(this)">
+                      <div class="priority-reason-card-content">
+                        <div class="priority-reason-title">Safety or Compliance</div>
+                        <div class="priority-reason-desc">Safety systems or regulatory compliance at risk</div>
+                      </div>
+                    </label>
+                    <label class="priority-reason-card">
+                      <input type="radio" name="priority-reason" value="personal_productivity" onchange="onPriorityReasonChange(this)">
+                      <div class="priority-reason-card-content">
+                        <div class="priority-reason-title">Personal Productivity</div>
+                        <div class="priority-reason-desc">Individual work is blocked but operations continue</div>
+                      </div>
+                    </label>
+                    <label class="priority-reason-card priority-reason-card-other">
+                      <input type="radio" name="priority-reason" value="other" onchange="onPriorityReasonChange(this)">
+                      <div class="priority-reason-card-content">
+                        <div class="priority-reason-title">Other</div>
+                        <div class="priority-reason-desc">Specify the reason below</div>
+                      </div>
+                    </label>
+                  </div>
+                  <div id="priority-other-container" style="display:none;margin-top:10px;">
+                    <input type="text" id="priority-other-text" class="form-control" placeholder="Briefly describe why this request is urgent..." maxlength="200">
+                  </div>
+                </div>
               </div>
               <button type="submit" class="btn btn-primary btn-full" id="submit-request-btn">Submit Request</button>
             </form>
@@ -337,6 +394,10 @@
                   <div class="meta-item">
                     <label>Created</label>
                     <span id="detail-date"></span>
+                  </div>
+                  <div class="meta-item">
+                    <label>Priority</label>
+                    <span id="detail-priority"></span>
                   </div>
                 </div>
                 <div class="ticket-description" id="detail-description"></div>

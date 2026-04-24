@@ -32,6 +32,7 @@ function initializeDatabase() {
       cc TEXT,
       status TEXT NOT NULL DEFAULT 'open',
       priority TEXT DEFAULT 'normal',
+      priority_reason TEXT DEFAULT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       closed_at DATETIME,
@@ -73,6 +74,11 @@ function initializeDatabase() {
       FOREIGN KEY (ticket_id) REFERENCES tickets(id)
     );
   `);
+
+  // Migration: add priority_reason column if it doesn't exist
+  try {
+    db.exec('ALTER TABLE tickets ADD COLUMN priority_reason TEXT DEFAULT NULL');
+  } catch (e) { /* column already exists */ }
 
   // Seed default IT admin users if they don't exist (idempotent per email)
   const seedUsers = [
