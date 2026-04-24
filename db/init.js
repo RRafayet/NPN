@@ -80,10 +80,11 @@ function initializeDatabase() {
     db.exec('ALTER TABLE tickets ADD COLUMN priority_reason TEXT DEFAULT NULL');
   } catch (e) { /* column already exists */ }
 
+  // Remove generic IT Admin/Support accounts if they exist
+  db.prepare("DELETE FROM users WHERE email IN ('admin@nipponexpress.com', 'support@nipponexpress.com')").run();
+
   // Seed default IT admin users if they don't exist (idempotent per email)
   const seedUsers = [
-    { name: 'IT Admin',      email: 'admin@nipponexpress.com',           password: 'admin123',    role: 'admin' },
-    { name: 'IT Support',    email: 'support@nipponexpress.com',         password: 'admin123',    role: 'admin' },
     { name: 'Radif Rafayet', email: 'radif.rafayet@nipponexpress.com',   password: 'Nippon@2024', role: 'admin' },
     { name: 'Sudip Regmi',   email: 'sudip.regmi@nipponexpress.com',     password: 'Nippon@2024', role: 'admin' },
     { name: 'Staff',         email: 'staff@nipponexpress.com',           password: 'Nippon@2024', role: 'user' },
