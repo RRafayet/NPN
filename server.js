@@ -38,9 +38,9 @@ app.listen(PORT, () => {
   ║     Nippon Express IT Request Portal         ║
   ║     Running on http://localhost:${PORT}          ║
   ║                                              ║
-  ║     Default Admin Login:                     ║
-  ║     Email: admin@nipponexpress.com           ║
-  ║     Password: admin123                       ║
+  ║     Admin Login:                             ║
+  ║     Email: radif.rafayet@nipponexpress.com   ║
+  ║     Password: Nippon@2024                    ║
   ╚══════════════════════════════════════════════╝
   `);
 });

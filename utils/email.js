@@ -181,11 +181,102 @@ function chatNotificationEmail(ticket, senderName, messageText, userEmail) {
   return sendEmail(userEmail, subject, html);
 }
 
+function parseCcEmails(cc) {
+  if (!cc) return [];
+  return cc.split(',').map(e => e.trim()).filter(e => e.includes('@'));
+}
+
+function ccTicketCreatedEmail(ticket, ccEmail) {
+  const subject = `[CC] IT Request #${ticket.ticket_number} submitted by ${ticket.requester_name}`;
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="background-color: #CC0000; color: white; padding: 20px; text-align: center;">
+        <h2 style="margin: 0;">Nippon Express IT Portal</h2>
+        <p style="margin: 5px 0 0;">You Have Been CC'd on an IT Request</p>
+      </div>
+      <div style="padding: 20px; border: 1px solid #ddd;">
+        <p>You have been copied on the following IT support request submitted by <strong>${ticket.requester_name}</strong>.</p>
+        <div style="background-color: #f9f9f9; border: 2px solid #CC0000; border-radius: 8px; padding: 16px; text-align: center; margin: 20px 0;">
+          <p style="margin: 0; font-size: 13px; color: #666;">Ticket Number</p>
+          <p style="margin: 8px 0 0; font-size: 28px; font-weight: bold; color: #CC0000;">#${ticket.ticket_number}</p>
+        </div>
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #eee;">Raised By:</td><td style="padding: 8px; border-bottom: 1px solid #eee;">${ticket.requester_name}</td></tr>
+          <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #eee;">Device / System:</td><td style="padding: 8px; border-bottom: 1px solid #eee;">${ticket.device_name}</td></tr>
+          <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #eee;">Description:</td><td style="padding: 8px; border-bottom: 1px solid #eee;">${ticket.description}</td></tr>
+          <tr><td style="padding: 8px; font-weight: bold;">Status:</td><td style="padding: 8px;"><span style="background-color: #FFA500; color: white; padding: 3px 10px; border-radius: 12px;">Open</span></td></tr>
+        </table>
+        <p style="margin-top: 15px; color: #666; font-size: 13px;">You will receive email updates whenever this ticket changes status or receives a new message.</p>
+      </div>
+      <div style="background-color: #f5f5f5; padding: 10px; text-align: center; font-size: 12px; color: #666;">
+        Nippon Express IT Support Portal &mdash; This is an automated message, please do not reply.
+      </div>
+    </div>
+  `;
+  return sendEmail(ccEmail, subject, html);
+}
+
+function ccStatusUpdateEmail(ticket, status, ccEmail) {
+  const statusLabels = { in_progress: 'In Progress', closed: 'Resolved & Closed' };
+  const statusColors = { in_progress: '#007bff', closed: '#28a745' };
+  const statusLabel = statusLabels[status] || status;
+  const statusColor = statusColors[status] || '#666';
+  const subject = `[CC Update] Ticket #${ticket.ticket_number} is now ${statusLabel}`;
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="background-color: #CC0000; color: white; padding: 20px; text-align: center;">
+        <h2 style="margin: 0;">Nippon Express IT Portal</h2>
+        <p style="margin: 5px 0 0;">Status Update on a CC'd Request</p>
+      </div>
+      <div style="padding: 20px; border: 1px solid #ddd;">
+        <p>The following IT request (which you were CC'd on) has been updated.</p>
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #eee;">Ticket #:</td><td style="padding: 8px; border-bottom: 1px solid #eee; color: #CC0000; font-weight: bold;">${ticket.ticket_number}</td></tr>
+          <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #eee;">Raised By:</td><td style="padding: 8px; border-bottom: 1px solid #eee;">${ticket.requester_name}</td></tr>
+          <tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #eee;">Device / System:</td><td style="padding: 8px; border-bottom: 1px solid #eee;">${ticket.device_name}</td></tr>
+          <tr><td style="padding: 8px; font-weight: bold;">New Status:</td><td style="padding: 8px;"><span style="background-color: ${statusColor}; color: white; padding: 3px 10px; border-radius: 12px;">${statusLabel}</span></td></tr>
+        </table>
+      </div>
+      <div style="background-color: #f5f5f5; padding: 10px; text-align: center; font-size: 12px; color: #666;">
+        Nippon Express IT Support Portal &mdash; This is an automated message, please do not reply.
+      </div>
+    </div>
+  `;
+  return sendEmail(ccEmail, subject, html);
+}
+
+function ccChatNotificationEmail(ticket, senderName, messageText, ccEmail) {
+  const subject = `[CC Update] New message on Ticket #${ticket.ticket_number}`;
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="background-color: #CC0000; color: white; padding: 20px; text-align: center;">
+        <h2 style="margin: 0;">Nippon Express IT Portal</h2>
+        <p style="margin: 5px 0 0;">New Message on a CC'd Request</p>
+      </div>
+      <div style="padding: 20px; border: 1px solid #ddd;">
+        <p>A new message has been posted on IT Request <strong>#${ticket.ticket_number}</strong> (raised by ${ticket.requester_name}), which you were CC'd on.</p>
+        <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #CC0000; margin: 15px 0;">
+          <p style="margin: 0 0 5px; font-weight: bold;">${senderName} wrote:</p>
+          <p style="margin: 0;">${messageText}</p>
+        </div>
+      </div>
+      <div style="background-color: #f5f5f5; padding: 10px; text-align: center; font-size: 12px; color: #666;">
+        Nippon Express IT Support Portal &mdash; This is an automated message, please do not reply.
+      </div>
+    </div>
+  `;
+  return sendEmail(ccEmail, subject, html);
+}
+
 module.exports = {
   sendEmail,
+  parseCcEmails,
   newTicketEmailToIT,
   ticketConfirmationEmailToUser,
   ticketInProgressEmailToUser,
   ticketClosedEmailToUser,
-  chatNotificationEmail
+  chatNotificationEmail,
+  ccTicketCreatedEmail,
+  ccStatusUpdateEmail,
+  ccChatNotificationEmail
 };

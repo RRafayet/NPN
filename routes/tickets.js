@@ -3,7 +3,7 @@ const multer = require('multer');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const { requireAuthAPI, requireAdmin } = require('../middleware/auth');
-const { newTicketEmailToIT, ticketConfirmationEmailToUser, ticketInProgressEmailToUser, ticketClosedEmailToUser, chatNotificationEmail } = require('../utils/email');
+const { newTicketEmailToIT, ticketConfirmationEmailToUser, ticketInProgressEmailToUser, ticketClosedEmailToUser, chatNotificationEmail, parseCcEmails, ccTicketCreatedEmail, ccStatusUpdateEmail, ccChatNotificationEmail } = require('../utils/email');
 
 const router = express.Router();
 
@@ -91,6 +91,12 @@ module.exports = function(db) {
       }
     }
 
+    // Notify CC'd recipients
+    const ccEmails = parseCcEmails(ticket.cc);
+    for (const ccEmail of ccEmails) {
+      ccTicketCreatedEmail(ticket, ccEmail);
+    }
+
     // Create notification for IT admins
     const adminUsers = db.prepare('SELECT id FROM users WHERE role = ?').all('admin');
     const insertNotif = db.prepare('INSERT INTO notifications (user_id, ticket_id, type, message) VALUES (?, ?, ?, ?)');
@@ -169,9 +175,14 @@ module.exports = function(db) {
     const updatedTicketForEmail = db.prepare('SELECT * FROM tickets WHERE id = ?').get(ticket.id);
     const requester = db.prepare('SELECT email FROM users WHERE id = ?').get(ticket.requester_id);
 
+    const ccEmails = parseCcEmails(updatedTicketForEmail.cc);
+
     if (status === 'in_progress') {
       if (requester) {
         ticketInProgressEmailToUser(updatedTicketForEmail, requester.email);
+      }
+      for (const ccEmail of ccEmails) {
+        ccStatusUpdateEmail(updatedTicketForEmail, 'in_progress', ccEmail);
       }
       db.prepare('INSERT INTO notifications (user_id, ticket_id, type, message) VALUES (?, ?, ?, ?)')
         .run(ticket.requester_id, ticket.id, 'status_update', `Your ticket #${ticket.ticket_number} is now in progress`);
@@ -179,10 +190,11 @@ module.exports = function(db) {
 
     if (status === 'closed') {
       if (requester) {
-        ticketClosedEmailToUser(ticket, requester.email);
+        ticketClosedEmailToUser(updatedTicketForEmail, requester.email);
       }
-
-      // Create notification for requester
+      for (const ccEmail of ccEmails) {
+        ccStatusUpdateEmail(updatedTicketForEmail, 'closed', ccEmail);
+      }
       db.prepare('INSERT INTO notifications (user_id, ticket_id, type, message) VALUES (?, ?, ?, ?)')
         .run(ticket.requester_id, ticket.id, 'ticket_closed', `Your ticket #${ticket.ticket_number} has been resolved and closed`);
     }
@@ -204,6 +216,18 @@ module.exports = function(db) {
       .run(assigned_to, 'in_progress', ticket.id);
 
     const updatedTicket = db.prepare('SELECT * FROM tickets WHERE id = ?').get(ticket.id);
+
+    // Send in-progress email to requester and CC on assign
+    const requesterForAssign = db.prepare('SELECT email FROM users WHERE id = ?').get(ticket.requester_id);
+    if (requesterForAssign) {
+      ticketInProgressEmailToUser(updatedTicket, requesterForAssign.email);
+    }
+    for (const ccEmail of parseCcEmails(ticket.cc)) {
+      ccStatusUpdateEmail(updatedTicket, 'in_progress', ccEmail);
+    }
+    db.prepare('INSERT INTO notifications (user_id, ticket_id, type, message) VALUES (?, ?, ?, ?)')
+      .run(ticket.requester_id, ticket.id, 'status_update', `Your ticket #${ticket.ticket_number} is now in progress`);
+
     res.json({ success: true, ticket: updatedTicket });
   });
 
@@ -226,22 +250,30 @@ module.exports = function(db) {
 
     db.prepare('UPDATE tickets SET updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(ticket.id);
 
+    const ccEmails = parseCcEmails(ticket.cc);
+
     // Notify the other party via email
     if (user.role === 'admin') {
-      // IT admin messaged, notify the requester
+      // IT admin messaged — notify the requester and CC recipients
       const requester = db.prepare('SELECT email FROM users WHERE id = ?').get(ticket.requester_id);
       if (requester) {
         chatNotificationEmail(ticket, user.name, message.trim(), requester.email);
       }
+      for (const ccEmail of ccEmails) {
+        ccChatNotificationEmail(ticket, user.name, message.trim(), ccEmail);
+      }
       db.prepare('INSERT INTO notifications (user_id, ticket_id, type, message) VALUES (?, ?, ?, ?)')
         .run(ticket.requester_id, ticket.id, 'new_message', `New message from ${user.name} on ticket #${ticket.ticket_number}`);
     } else {
-      // User messaged, notify assigned IT or all admins
+      // User messaged — notify all IT admins and CC recipients
       const admins = db.prepare('SELECT id, email FROM users WHERE role = ?').all('admin');
       for (const admin of admins) {
         chatNotificationEmail(ticket, user.name, message.trim(), admin.email);
         db.prepare('INSERT INTO notifications (user_id, ticket_id, type, message) VALUES (?, ?, ?, ?)')
           .run(admin.id, ticket.id, 'new_message', `New message from ${user.name} on ticket #${ticket.ticket_number}`);
+      }
+      for (const ccEmail of ccEmails) {
+        ccChatNotificationEmail(ticket, user.name, message.trim(), ccEmail);
       }
     }
 
