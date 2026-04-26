@@ -73,6 +73,15 @@ function initializeDatabase() {
       FOREIGN KEY (user_id) REFERENCES users(id),
       FOREIGN KEY (ticket_id) REFERENCES tickets(id)
     );
+
+    CREATE TABLE IF NOT EXISTS password_reset_tokens (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      token TEXT UNIQUE NOT NULL,
+      expires_at DATETIME NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
   `);
 
   // Migration: add priority_reason column if it doesn't exist

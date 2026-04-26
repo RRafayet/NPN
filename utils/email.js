@@ -181,6 +181,35 @@ function chatNotificationEmail(ticket, senderName, messageText, userEmail) {
   return sendEmail(userEmail, subject, html);
 }
 
+function passwordResetEmail(userName, userEmail, resetToken) {
+  const subject = 'Reset Your Password - Nippon Express IT Portal';
+  const resetLink = `${PORTAL_URL}/?reset_token=${resetToken}`;
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="background-color: #CC0000; color: white; padding: 20px; text-align: center;">
+        <h2 style="margin: 0;">Nippon Express IT Portal</h2>
+        <p style="margin: 5px 0 0;">Password Reset Request</p>
+      </div>
+      <div style="padding: 20px; border: 1px solid #ddd;">
+        <p>Hi ${userName},</p>
+        <p>We received a request to reset your password for the Nippon Express IT Support Portal.</p>
+        <p>Click the button below to set a new password. This link will expire in <strong>1 hour</strong>.</p>
+        <div style="margin: 30px 0; text-align: center;">
+          <a href="${resetLink}" style="background-color: #CC0000; color: white; padding: 14px 36px; text-decoration: none; border-radius: 5px; display: inline-block; font-size: 16px;">Reset My Password</a>
+        </div>
+        <p style="color: #666; font-size: 13px;">If the button doesn't work, copy and paste this link into your browser:</p>
+        <p style="word-break: break-all; font-size: 12px; color: #CC0000;">${resetLink}</p>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+        <p style="color: #666; font-size: 12px;">If you did not request a password reset, please ignore this email. Your password will remain unchanged.</p>
+      </div>
+      <div style="background-color: #f5f5f5; padding: 10px; text-align: center; font-size: 12px; color: #666;">
+        Nippon Express IT Support Portal &mdash; This is an automated message, please do not reply.
+      </div>
+    </div>
+  `;
+  return sendEmail(userEmail, subject, html);
+}
+
 function parseCcEmails(cc) {
   if (!cc) return [];
   return cc.split(',').map(e => e.trim()).filter(e => e.includes('@'));
@@ -271,6 +300,7 @@ function ccChatNotificationEmail(ticket, senderName, messageText, ccEmail) {
 module.exports = {
   sendEmail,
   parseCcEmails,
+  passwordResetEmail,
   newTicketEmailToIT,
   ticketConfirmationEmailToUser,
   ticketInProgressEmailToUser,
