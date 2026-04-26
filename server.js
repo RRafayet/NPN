@@ -26,6 +26,7 @@ app.use(session({
 app.use('/api/auth', require('./routes/auth')(db));
 app.use('/api/tickets', require('./routes/tickets')(db));
 app.use('/api/kb', require('./routes/knowledgeBase')(db));
+app.use('/api/users', require('./routes/users')(db));
 
 // Page routes - serve the SPA
 app.get('*', (req, res) => {

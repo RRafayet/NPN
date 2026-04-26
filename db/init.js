@@ -89,6 +89,16 @@ function initializeDatabase() {
     db.exec('ALTER TABLE tickets ADD COLUMN priority_reason TEXT DEFAULT NULL');
   } catch (e) { /* column already exists */ }
 
+  // Migration: add is_active to users
+  try {
+    db.exec('ALTER TABLE users ADD COLUMN is_active INTEGER DEFAULT 1');
+  } catch (e) { /* column already exists */ }
+
+  // Migration: add category to tickets
+  try {
+    db.exec("ALTER TABLE tickets ADD COLUMN category TEXT DEFAULT 'General'");
+  } catch (e) { /* column already exists */ }
+
   // Remove generic IT Admin/Support accounts if they exist
   db.prepare("DELETE FROM users WHERE email IN ('admin@nipponexpress.com', 'support@nipponexpress.com')").run();
 

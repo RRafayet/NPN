@@ -60,6 +60,7 @@ async function viewTicket(id) {
     document.getElementById('detail-device').textContent = ticket.device_name;
     document.getElementById('detail-description').textContent = ticket.description;
     document.getElementById('detail-date').textContent = formatDate(ticket.created_at) + ' ' + formatTime(ticket.created_at);
+    document.getElementById('detail-category').textContent = ticket.category || 'General';
 
     var priorityEl = document.getElementById('detail-priority');
     if (ticket.priority === 'high') {

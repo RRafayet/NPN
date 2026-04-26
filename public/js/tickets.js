@@ -30,6 +30,7 @@ function renderTicketRows(tickets, tbody, isAdmin) {
       '<td><span class="ticket-number" onclick="viewTicket(' + t.id + ')">' + escapeHtml(t.ticket_number) + '</span>' +
       (isAdmin && t.priority === 'high' ? ' ' + priorityBadge(t.priority, t.priority_reason) : '') + '</td>';
     if (isAdmin) row += '<td>' + escapeHtml(t.requester_name) + '</td>';
+    row += '<td><span class="kb-category">' + escapeHtml(t.category || 'General') + '</span></td>';
     row += '<td>' + escapeHtml(t.device_name) + '</td>' +
       '<td>' + escapeHtml(truncate(t.description, 40)) + '</td>';
     if (isAdmin) row += '<td>' + escapeHtml(assignedName) + '</td>';
@@ -141,6 +142,7 @@ function onPriorityReasonChange(radio) {
 
 function resetNewRequestForm() {
   document.getElementById('new-request-form').reset();
+  document.getElementById('req-category').value = '';
   document.getElementById('new-request-form').style.display = '';
   document.getElementById('request-success').style.display = 'none';
   document.getElementById('file-name').textContent = '';
@@ -215,6 +217,7 @@ function initNewRequest() {
 
     try {
       var formData = new FormData();
+      formData.append('category', document.getElementById('req-category').value);
       formData.append('device_name', document.getElementById('req-device').value);
       formData.append('description', document.getElementById('req-description').value);
       formData.append('assigned_to', document.getElementById('req-assign').value);

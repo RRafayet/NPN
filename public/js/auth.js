@@ -240,3 +240,53 @@ function initAuth() {
     showAuth();
   });
 }
+
+// ===== Profile Page =====
+function loadProfile() {
+  document.getElementById('profile-name').textContent = currentUser.name;
+  document.getElementById('profile-email').textContent = currentUser.email;
+  document.getElementById('profile-role').textContent = currentUser.role === 'admin' ? 'IT Staff (Admin)' : 'Employee';
+  document.getElementById('change-password-form').reset();
+  var msg = document.getElementById('profile-msg');
+  msg.classList.remove('visible');
+  msg.style.color = '';
+}
+
+function initProfile() {
+  document.getElementById('change-password-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    var msg = document.getElementById('profile-msg');
+    msg.classList.remove('visible');
+    var newPass = document.getElementById('cp-new').value;
+    var confirmPass = document.getElementById('cp-confirm').value;
+    if (newPass !== confirmPass) {
+      msg.style.color = '';
+      msg.textContent = 'New passwords do not match';
+      msg.classList.add('visible');
+      return;
+    }
+    var btn = this.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+    try {
+      await api('/api/auth/change-password', {
+        method: 'PUT',
+        body: {
+          current_password: document.getElementById('cp-current').value,
+          new_password: newPass
+        }
+      });
+      msg.style.color = '#28a745';
+      msg.textContent = 'Password updated successfully!';
+      msg.classList.add('visible');
+      this.reset();
+    } catch (err) {
+      msg.style.color = '';
+      msg.textContent = err.message;
+      msg.classList.add('visible');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Update Password';
+    }
+  });
+}

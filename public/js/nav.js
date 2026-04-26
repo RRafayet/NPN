@@ -43,6 +43,8 @@ function navigateTo(page) {
     'all-tickets': 'All Tickets',
     'knowledge-base': 'Knowledge Base',
     'manage-kb': 'Manage Articles',
+    'manage-users': 'Manage Users',
+    'profile': 'My Profile',
     'ticket-detail': 'Ticket Details',
     'kb-article': 'Article'
   };
@@ -54,6 +56,8 @@ function navigateTo(page) {
   if (page === 'new-request') loadNewRequestForm();
   if (page === 'knowledge-base') loadKnowledgeBase();
   if (page === 'manage-kb') loadManageKB();
+  if (page === 'manage-users') loadManageUsers();
+  if (page === 'profile') loadProfile();
   // Start background polling for list pages
   startPagePolling(page);
   // Close mobile sidebar

@@ -45,6 +45,9 @@ module.exports = function(db) {
     if (!user || !bcrypt.compareSync(password, user.password)) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
+    if (user.is_active === 0) {
+      return res.status(403).json({ error: 'Your account has been deactivated. Please contact IT.' });
+    }
 
     req.session.user = {
       id: user.id,
@@ -68,6 +71,22 @@ module.exports = function(db) {
       return res.json({ user: req.session.user });
     }
     res.json({ user: null });
+  });
+
+  // Change password (logged-in user)
+  router.put('/change-password', (req, res) => {
+    if (!req.session || !req.session.user) return res.status(401).json({ error: 'Not authenticated' });
+    const { current_password, new_password } = req.body;
+    if (!current_password || !new_password) return res.status(400).json({ error: 'All fields are required' });
+    if (new_password.length < 6) return res.status(400).json({ error: 'New password must be at least 6 characters' });
+
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.session.user.id);
+    if (!user || !bcrypt.compareSync(current_password, user.password)) {
+      return res.status(400).json({ error: 'Current password is incorrect' });
+    }
+
+    db.prepare('UPDATE users SET password = ? WHERE id = ?').run(bcrypt.hashSync(new_password, 10), user.id);
+    res.json({ success: true });
   });
 
   // Forgot password — sends reset link to email

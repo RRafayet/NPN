@@ -43,7 +43,7 @@ module.exports = function(db) {
 
   // Create ticket
   router.post('/', requireAuthAPI, upload.single('image'), (req, res) => {
-    const { device_name, description, assigned_to, cc, priority, priority_reason } = req.body;
+    const { device_name, description, assigned_to, cc, priority, priority_reason, category } = req.body;
     const user = req.session.user;
 
     if (!device_name || !description) {
@@ -63,11 +63,12 @@ module.exports = function(db) {
     const assignedTo = assigned_to ? parseInt(assigned_to) : null;
     const ticketPriority = priority === 'high' ? 'high' : 'normal';
     const ticketPriorityReason = ticketPriority === 'high' && priority_reason ? priority_reason.trim().substring(0, 300) : null;
+    const ticketCategory = category || 'General';
 
     const result = db.prepare(`
-      INSERT INTO tickets (ticket_number, requester_id, requester_name, device_name, description, image_path, assigned_to, cc, status, priority, priority_reason)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, ?)
-    `).run(ticketNumber, user.id, user.name, device_name, description, imagePath, assignedTo, cc || null, ticketPriority, ticketPriorityReason);
+      INSERT INTO tickets (ticket_number, requester_id, requester_name, device_name, description, image_path, assigned_to, cc, status, priority, priority_reason, category)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, ?, ?)
+    `).run(ticketNumber, user.id, user.name, device_name, description, imagePath, assignedTo, cc || null, ticketPriority, ticketPriorityReason, ticketCategory);
 
     const ticket = db.prepare('SELECT * FROM tickets WHERE id = ?').get(result.lastInsertRowid);
 
@@ -78,7 +79,7 @@ module.exports = function(db) {
     }
 
     // Notify IT admins via email
-    const admins = db.prepare('SELECT email FROM users WHERE role = ?').all('admin');
+    const admins = db.prepare("SELECT email FROM users WHERE role = 'admin' AND is_active = 1").all();
     for (const admin of admins) {
       newTicketEmailToIT(ticket, admin.email);
     }
@@ -98,7 +99,7 @@ module.exports = function(db) {
     }
 
     // Create notification for IT admins
-    const adminUsers = db.prepare('SELECT id FROM users WHERE role = ?').all('admin');
+    const adminUsers = db.prepare("SELECT id FROM users WHERE role = 'admin' AND is_active = 1").all();
     const insertNotif = db.prepare('INSERT INTO notifications (user_id, ticket_id, type, message) VALUES (?, ?, ?, ?)');
     const priorityReasonLabels = {
       'operations_down': 'Operations Down',
@@ -266,7 +267,7 @@ module.exports = function(db) {
         .run(ticket.requester_id, ticket.id, 'new_message', `New message from ${user.name} on ticket #${ticket.ticket_number}`);
     } else {
       // User messaged — notify all IT admins and CC recipients
-      const admins = db.prepare('SELECT id, email FROM users WHERE role = ?').all('admin');
+      const admins = db.prepare("SELECT id, email FROM users WHERE role = 'admin' AND is_active = 1").all();
       for (const admin of admins) {
         chatNotificationEmail(ticket, user.name, message.trim(), admin.email);
         db.prepare('INSERT INTO notifications (user_id, ticket_id, type, message) VALUES (?, ?, ?, ?)')
@@ -283,7 +284,7 @@ module.exports = function(db) {
 
   // Get IT staff list (for assignment dropdown)
   router.get('/staff/list', requireAuthAPI, (req, res) => {
-    const staff = db.prepare('SELECT id, name, email FROM users WHERE role = ?').all('admin');
+    const staff = db.prepare("SELECT id, name, email FROM users WHERE role = 'admin' AND is_active = 1").all();
     res.json({ staff });
   });
 
