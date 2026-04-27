@@ -42,11 +42,9 @@ function navigateTo(page) {
     'my-tickets': 'My Tickets',
     'all-tickets': 'All Tickets',
     'knowledge-base': 'Knowledge Base',
-    'manage-kb': 'Manage Articles',
     'manage-users': 'Manage Users',
     'profile': 'My Profile',
-    'ticket-detail': 'Ticket Details',
-    'kb-article': 'Article'
+    'ticket-detail': 'Ticket Details'
   };
   document.getElementById('page-title').textContent = titles[page] || 'Dashboard';
   // Load page data
@@ -55,7 +53,6 @@ function navigateTo(page) {
   if (page === 'all-tickets') loadAllTickets();
   if (page === 'new-request') loadNewRequestForm();
   if (page === 'knowledge-base') loadKnowledgeBase();
-  if (page === 'manage-kb') loadManageKB();
   if (page === 'manage-users') loadManageUsers();
   if (page === 'profile') loadProfile();
   // Start background polling for list pages

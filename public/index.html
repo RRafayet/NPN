@@ -131,9 +131,6 @@
           <div class="nav-item" data-page="manage-users">
             <span class="nav-icon">&#128101;</span> Manage Users
           </div>
-          <div class="nav-item" data-page="manage-kb">
-            <span class="nav-icon">&#9998;</span> Manage Articles
-          </div>
         </div>
 
         <div class="nav-section-title">Resources</div>
@@ -494,75 +491,15 @@
 
       <!-- Page: Knowledge Base -->
       <div class="page-content page" id="page-knowledge-base" style="display:none;">
-        <div class="search-bar">
-          <div class="search-input-wrapper">
-            <span class="search-icon">&#128269;</span>
-            <input type="text" id="kb-search" placeholder="Search articles...">
-          </div>
-        </div>
-        <div class="filter-tabs" id="kb-categories"></div>
-        <div class="kb-grid" id="kb-grid"></div>
-        <div class="empty-state" id="kb-empty" style="display:none;">
-          <div class="empty-state-icon">&#128214;</div>
-          <h3>No articles yet</h3>
-          <p>IT team will add helpful guides and manuals here. Check back soon!</p>
-          <button class="btn btn-primary admin-only-btn" style="display:none;" onclick="navigateTo('manage-kb')">&#10010; Add First Article</button>
-        </div>
-
-        <!-- Documents & Files Section -->
-        <div style="margin-top:32px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-            <h2 style="font-size:17px;font-weight:700;">&#128196; Documents &amp; Files</h2>
-            <button class="btn btn-primary btn-sm admin-only-doc-btn" id="btn-upload-doc" style="display:none;">&#128228; Upload Document</button>
-          </div>
-          <div id="doc-list" class="doc-list"></div>
-          <div class="empty-state" id="doc-empty" style="display:none;padding:30px 0;">
-            <div class="empty-state-icon">&#128196;</div>
-            <p style="color:#999;">No documents uploaded yet.</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Page: KB Article View -->
-      <div class="page-content page" id="page-kb-article" style="display:none;">
-        <div style="margin-bottom:20px;">
-          <button class="btn btn-secondary btn-sm" onclick="navigateTo('knowledge-base')">&#8592; Back to Knowledge Base</button>
-        </div>
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <span class="kb-category" id="article-category"></span>
-              <h2 id="article-title" style="margin-top:8px;"></h2>
-            </div>
-          </div>
-          <div class="card-body padded">
-            <div class="kb-article-content" id="article-content"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Page: Manage KB (Admin) -->
-      <div class="page-content page" id="page-manage-kb" style="display:none;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-          <h2 style="font-size:18px;">Manage Knowledge Base Articles</h2>
-          <button class="btn btn-primary btn-sm" id="btn-new-article">&#10010; New Article</button>
+          <p style="color:var(--npe-gray-500);font-size:14px;margin:0;">IT manuals and documents. Click Download to open a file.</p>
+          <button class="btn btn-primary btn-sm" id="btn-upload-doc" style="display:none;">&#128228; Upload Document</button>
         </div>
-        <div class="card">
-          <div class="card-body">
-            <div class="table-wrapper">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Title</th>
-                    <th>Category</th>
-                    <th>Created</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="manage-kb-body"></tbody>
-              </table>
-            </div>
-          </div>
+        <div id="doc-list" class="doc-list"></div>
+        <div class="empty-state" id="doc-empty" style="display:none;">
+          <div class="empty-state-icon">&#128196;</div>
+          <h3>No documents yet</h3>
+          <p>The IT team will upload manuals and guides here.</p>
         </div>
       </div>
 
@@ -688,7 +625,6 @@
             <div class="file-upload" id="doc-upload-area" style="min-height:100px;">
               <div class="file-upload-icon">&#128228;</div>
               <p>Click or drag a file here</p>
-              <p style="font-size:12px;color:#999;">PDF, Word, Excel, PowerPoint, CSV, ZIP — max 25MB</p>
               <p class="file-name" id="doc-file-name"></p>
               <input type="file" id="doc-file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.png,.jpg,.jpeg,.gif,.webp,.zip">
             </div>
@@ -698,37 +634,6 @@
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="closeDocModal()">Cancel</button>
         <button class="btn btn-primary" id="doc-upload-btn">Upload</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- KB Article Modal (Create/Edit) -->
-  <div class="modal-overlay" id="kb-modal">
-    <div class="modal">
-      <div class="modal-header">
-        <h3 id="kb-modal-title">New Article</h3>
-        <button class="modal-close" onclick="closeKBModal()">&times;</button>
-      </div>
-      <div class="modal-body">
-        <form id="kb-article-form">
-          <input type="hidden" id="kb-edit-id">
-          <div class="form-group">
-            <label for="kb-title">Title</label>
-            <input type="text" id="kb-title" class="form-control" required>
-          </div>
-          <div class="form-group">
-            <label for="kb-category-input">Category</label>
-            <input type="text" id="kb-category-input" class="form-control" placeholder="e.g., Network, Hardware, Email" required>
-          </div>
-          <div class="form-group">
-            <label for="kb-content">Content (HTML supported)</label>
-            <textarea id="kb-content" class="form-control" rows="10" required></textarea>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeKBModal()">Cancel</button>
-        <button class="btn btn-primary" id="kb-save-btn">Save Article</button>
       </div>
     </div>
   </div>
