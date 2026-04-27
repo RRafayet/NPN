@@ -2,4 +2,7 @@ node_modules/
 portal.db
 public/uploads/*
 !public/uploads/.gitkeep
+!public/uploads/docs/
+public/uploads/docs/*
+!public/uploads/docs/.gitkeep
 .env

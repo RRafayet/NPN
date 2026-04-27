@@ -508,6 +508,19 @@
           <p>IT team will add helpful guides and manuals here. Check back soon!</p>
           <button class="btn btn-primary admin-only-btn" style="display:none;" onclick="navigateTo('manage-kb')">&#10010; Add First Article</button>
         </div>
+
+        <!-- Documents & Files Section -->
+        <div style="margin-top:32px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <h2 style="font-size:17px;font-weight:700;">&#128196; Documents &amp; Files</h2>
+            <button class="btn btn-primary btn-sm admin-only-doc-btn" id="btn-upload-doc" style="display:none;">&#128228; Upload Document</button>
+          </div>
+          <div id="doc-list" class="doc-list"></div>
+          <div class="empty-state" id="doc-empty" style="display:none;padding:30px 0;">
+            <div class="empty-state-icon">&#128196;</div>
+            <p style="color:#999;">No documents uploaded yet.</p>
+          </div>
+        </div>
       </div>
 
       <!-- Page: KB Article View -->
@@ -652,6 +665,43 @@
     </div>
   </div>
 
+  <!-- Upload Document Modal -->
+  <div class="modal-overlay" id="doc-upload-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Upload Document</h3>
+        <button class="modal-close" onclick="closeDocModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="doc-upload-error" class="error-msg" style="margin-bottom:12px;"></div>
+        <form id="doc-upload-form">
+          <div class="form-group">
+            <label for="doc-title">Document Title *</label>
+            <input type="text" id="doc-title" class="form-control" placeholder="e.g., VPN Setup Guide" required>
+          </div>
+          <div class="form-group">
+            <label for="doc-category">Category</label>
+            <input type="text" id="doc-category" class="form-control" placeholder="e.g., Network, Hardware, Policies">
+          </div>
+          <div class="form-group">
+            <label>File *</label>
+            <div class="file-upload" id="doc-upload-area" style="min-height:100px;">
+              <div class="file-upload-icon">&#128228;</div>
+              <p>Click or drag a file here</p>
+              <p style="font-size:12px;color:#999;">PDF, Word, Excel, PowerPoint, CSV, ZIP — max 25MB</p>
+              <p class="file-name" id="doc-file-name"></p>
+              <input type="file" id="doc-file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.png,.jpg,.jpeg,.gif,.webp,.zip">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeDocModal()">Cancel</button>
+        <button class="btn btn-primary" id="doc-upload-btn">Upload</button>
+      </div>
+    </div>
+  </div>
+
   <!-- KB Article Modal (Create/Edit) -->
   <div class="modal-overlay" id="kb-modal">
     <div class="modal">
@@ -707,6 +757,7 @@
       initTicketDetail();
       initKBSearch();
       initManageKB();
+      initDocUpload();
       initNotifications();
       initProfile();
       initManageUsers();

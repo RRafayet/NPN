@@ -99,6 +99,23 @@ function initializeDatabase() {
     db.exec("ALTER TABLE tickets ADD COLUMN category TEXT DEFAULT 'General'");
   } catch (e) { /* column already exists */ }
 
+  // KB Documents table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS kb_documents (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      category TEXT NOT NULL DEFAULT 'General',
+      filename TEXT NOT NULL,
+      original_name TEXT NOT NULL,
+      file_size INTEGER DEFAULT 0,
+      mime_type TEXT,
+      uploader_id INTEGER NOT NULL,
+      uploader_name TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (uploader_id) REFERENCES users(id)
+    );
+  `);
+
   // Remove generic IT Admin/Support accounts if they exist
   db.prepare("DELETE FROM users WHERE email IN ('admin@nipponexpress.com', 'support@nipponexpress.com')").run();
 

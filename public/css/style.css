@@ -1193,3 +1193,65 @@ tr.row-priority:hover td { background: rgba(204,0,0,0.08); }
   .auth-hero { flex: 0 0 180px; min-height: 180px; }
   .auth-hero-tagline { font-size: 15px; }
 }
+
+/* ===== Document Cards ===== */
+.doc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.doc-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--npe-white);
+  border: 1px solid var(--npe-gray-300);
+  border-radius: 8px;
+  padding: 14px 16px;
+  transition: box-shadow 0.15s;
+}
+
+.doc-card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.doc-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+  width: 40px;
+  text-align: center;
+}
+
+.doc-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.doc-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--npe-gray-900);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.doc-meta {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.doc-actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .doc-card { flex-wrap: wrap; }
+  .doc-actions { width: 100%; margin-top: 8px; }
+}
